@@ -87,6 +87,9 @@
   <ItemGroup>
     <ClCompile Include="..\src\sanalar_string.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\docs\encoding_detect.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

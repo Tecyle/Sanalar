@@ -16,6 +16,9 @@
     <Filter Include="Header Files\public">
       <UniqueIdentifier>{dea305f9-6dfc-443e-9517-23e7dcc09062}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Documents">
+      <UniqueIdentifier>{28ba7fe9-052e-4b1d-820c-21f4ef3b5e81}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -38,5 +41,10 @@
     <ClCompile Include="..\src\sanalar_string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\docs\encoding_detect.md">
+      <Filter>Documents</Filter>
+    </None>
   </ItemGroup>
 </Project>
