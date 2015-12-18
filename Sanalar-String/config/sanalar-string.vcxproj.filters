@@ -46,5 +46,8 @@
     <None Include="..\docs\encoding_detect.md">
       <Filter>Documents</Filter>
     </None>
+    <None Include="..\docs\typical_encode_shedule.md">
+      <Filter>Documents</Filter>
+    </None>
   </ItemGroup>
 </Project>

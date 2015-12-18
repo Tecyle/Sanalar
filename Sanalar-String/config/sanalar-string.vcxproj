@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\docs\encoding_detect.md" />
+    <None Include="..\docs\typical_encode_shedule.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
