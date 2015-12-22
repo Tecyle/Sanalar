@@ -153,7 +153,7 @@ namespace Sanalar
 		operator const wchar_t*();
 
 		private:
-			StringData* stringDataW;
-			StringData* stringDataA;
+			StringData* m_stringDataW;
+			StringData* m_stringDataA;
 	};
 }

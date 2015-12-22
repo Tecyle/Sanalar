@@ -32,24 +32,24 @@ namespace Sanalar
 	// ¹¹Ôìº¯Êý
 	String::String()
 	{
-		stringDataW = (StringData*)new byte[sizeof(StringData)+sizeof(byte)* STRING_DATA_RESERVED_SIZE];
-		stringDataW->allocLength = STRING_DATA_RESERVED_SIZE;
-		stringDataW->isUnicode = true;
-		stringDataW->refCount = 1;
-		stringDataW->stringLength = 0;
-		stringDataW->Data()[0] = 0;
+		m_stringDataW = (StringData*)new byte[sizeof(StringData)+sizeof(byte)* STRING_DATA_RESERVED_SIZE];
+		m_stringDataW->allocLength = STRING_DATA_RESERVED_SIZE;
+		m_stringDataW->isUnicode = true;
+		m_stringDataW->refCount = 1;
+		m_stringDataW->stringLength = 0;
+		m_stringDataW->Data()[0] = 0;
 
-		stringDataA = NULL;
+		m_stringDataA = NULL;
 	}
 
 	String::String(const wchar_t* str)
 	{
-		stringDataW = (StringData*)new byte[sizeof(StringData)+sizeof(byte)* STRING_DATA_RESERVED_SIZE];
-		stringDataW->allocLength = STRING_DATA_RESERVED_SIZE;
-		stringDataW->isUnicode = true;
-		stringDataW->refCount = 1;
-		memcpy_s(stringDataW->Data(), STRING_DATA_RESERVED_SIZE, str, (wcslen(str) + 1) * sizeof(wchar_t)); // ¿½±´°üÀ¨Ä©Î²µÄ 0
-		stringDataW->stringLength = wcslen(str);
+		m_stringDataW = (StringData*)new byte[sizeof(StringData)+sizeof(byte)* STRING_DATA_RESERVED_SIZE];
+		m_stringDataW->allocLength = STRING_DATA_RESERVED_SIZE;
+		m_stringDataW->isUnicode = true;
+		m_stringDataW->refCount = 1;
+		memcpy_s(m_stringDataW->Data(), STRING_DATA_RESERVED_SIZE, str, (wcslen(str) + 1) * sizeof(wchar_t)); // ¿½±´°üÀ¨Ä©Î²µÄ 0
+		m_stringDataW->stringLength = wcslen(str);
 	}
 
 }

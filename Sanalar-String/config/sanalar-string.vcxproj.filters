@@ -36,9 +36,18 @@
     <ClInclude Include="..\..\public\includes\sanalar_base.h">
       <Filter>Header Files\public</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\encode_detect_state_machine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\utf8_detect_state_machine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\sanalar_string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utf8_detect_state_machine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
