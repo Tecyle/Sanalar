@@ -18,7 +18,9 @@ namespace Sanalar
 		virtual bool Initialize() = 0;
 		virtual bool InputByte(byte b) = 0;
 		virtual EncodeDetectState GetDetectState() const = 0;
-		virtual double GetConfidenceLevel() const = 0;
+		virtual double GetConfidenceLevel() = 0;
 		virtual void Uninitialize() = 0;
+
+		virtual bool CheckBOM(const byte* bs, size_t bLen) const = 0;
 	};
 }

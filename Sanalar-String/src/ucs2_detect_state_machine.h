@@ -3,9 +3,9 @@
 
 namespace Sanalar
 {
-	typedef enum Utf8DetectState Utf8DetectState;
+	typedef enum Ucs2DetectState Ucs2DetectState;
 
-	class Utf8DetectStateMachine : EncodeDetectStateMachine
+	class Ucs2DetectStateMachine : EncodeDetectStateMachine
 	{
 	public:
 		virtual bool Initialize();
@@ -19,13 +19,9 @@ namespace Sanalar
 		void ChangeState(byte b);
 
 	private:
-		Utf8DetectState m_state;
+		Ucs2DetectState m_state;
 		double m_confidenceLevel;
 
 		size_t m_totalCharNum;
-		size_t m_multiBytesCharNum;
-		bool m_isCheckingMultiBytes;
-
-		size_t m_acceptMultiBytesNum;
 	};
 }
