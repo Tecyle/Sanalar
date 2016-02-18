@@ -41,8 +41,6 @@ namespace Sanalar
 		unsigned long GetRunningTime() const;
 		unsigned long GetMaxMemorySize() const;
 
-		void SendMessage();
-
 	private:
 		wchar_t* m_commandLine;
 		SubProcessState m_state;

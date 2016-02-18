@@ -33,3 +33,5 @@ obj
 /tools/String-Distributes-Counter/data
 ipch
 *.user
+bin
+/public/lib

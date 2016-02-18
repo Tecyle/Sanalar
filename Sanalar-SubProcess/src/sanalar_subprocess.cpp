@@ -17,7 +17,7 @@ static void _InitExternalFunc()
 	_fnNtResumeProcess = (FP_NtResumeProcess)GetProcAddress(hNtDll, "NtResumeProcess");
 }
 
-static void _ReleaseExternalFunc()
+void _ReleaseExternalFunc()
 {
 	FreeLibrary(hNtDll);
 }
@@ -50,7 +50,7 @@ namespace Sanalar
 		free(m_commandLine);
 		if (!command)
 			return;
-		m_commandLine = wcsdup(command);
+		m_commandLine = _wcsdup(command);
 	}
 
 	bool SubProcess::Start(bool suspend /*= false*/)
@@ -77,6 +77,7 @@ namespace Sanalar
 		if (!CreateProcess(NULL, m_commandLine, NULL, NULL, TRUE, flag, NULL, NULL, &si, &pi))
 			return false;
 
+		CloseHandle(m_hStdout);
 		m_state = suspend ? SubProcessState_suspend : SubProcessState_running;
 		m_hProcess = pi.hProcess;
 		m_hThread = pi.hThread;
@@ -87,7 +88,7 @@ namespace Sanalar
 	void SubProcess::SetStdInput(StdStream* stdInput)
 	{
 		if (stdInput)
-			m_hStdin = stdInput->GetRedirectInputHandle();
+			m_hStdin = stdInput->GetRedirectOutputHandle();
 		else
 			m_hStdin = NULL;
 	}
@@ -95,7 +96,7 @@ namespace Sanalar
 	void SubProcess::SetStdOutput(StdStream* stdOutput)
 	{
 		if (stdOutput)
-			m_hStdout = stdOutput->GetRedirectOutputHandle();
+			m_hStdout = stdOutput->GetRedirectInputHandle();
 		else
 			m_hStdout = NULL;
 	}
@@ -103,7 +104,7 @@ namespace Sanalar
 	void SubProcess::SetStdError(StdStream* stdError)
 	{
 		if (stdError)
-			m_hStderr = stdError->GetRedirectOutputHandle();
+			m_hStderr = stdError->GetRedirectInputHandle();
 		else
 			m_hStderr = NULL;
 	}
@@ -189,6 +190,25 @@ namespace Sanalar
 		if (WaitForSingleObject(m_hProcess, timeout) == WAIT_OBJECT_0)
 			return true;
 		return false;
+	}
+
+	SubProcess::SubProcess() :
+		m_hProcess(NULL),
+		m_hThread(NULL),
+		m_commandLine(NULL),
+		m_hStdin(NULL),
+		m_hStdout(NULL),
+		m_hStderr(NULL),
+		m_returnCode(0),
+		m_state(SubProcessState_init)
+	{
+	}
+
+	SubProcess::~SubProcess()
+	{
+		free(m_commandLine);
+		CloseHandle(m_hProcess);
+		CloseHandle(m_hThread);
 	}
 
 
