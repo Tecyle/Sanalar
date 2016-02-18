@@ -1,18 +1,11 @@
 #pragma once
+#include "sanalar_process.h"
 
 namespace Sanalar
 {
-	__interface StdStream;
+	class StdStream;
 
-	typedef enum SubProcessState
-	{
-		SubProcessState_init,
-		SubProcessState_running,
-		SubProcessState_suspend,
-		SubProcessState_finished
-	} SubProcessState;
-
-	class SubProcess
+	class SubProcess : public Process
 	{
 	public:
 		SubProcess();
@@ -24,59 +17,28 @@ namespace Sanalar
 		void SetCommand(const wchar_t* command);
 
 		bool Start(bool suspend = false);
-		bool Suspend();
-		bool Resume();
-		bool Terminate();
 		void Reset();
 
 		void SetStdInput(StdStream* stdInput);
 		void SetStdOutput(StdStream* stdOutput);
 		void SetStdError(StdStream* stdError);
 
-		bool Wait(unsigned long timeLimited = 0);
-		bool IsRunning();
-		SubProcessState GetSubProcessState();
-
-		int GetReturnCode() const;
 		unsigned long GetRunningTime() const;
 		unsigned long GetMaxMemorySize() const;
 
 	private:
 		wchar_t* m_commandLine;
-		SubProcessState m_state;
-
-		HANDLE m_hProcess;
-		HANDLE m_hThread;
 
 		HANDLE m_hStdin;
 		HANDLE m_hStdout;
 		HANDLE m_hStderr;
-
-		DWORD m_returnCode;
 	};
 
-	__interface StdStream
-	{
-		size_t Read(unsigned char* buffer, size_t maxSize);
-		bool Write(unsigned char* buffer, size_t bufferSize);
-
-		HANDLE GetInputHandle() const;
-		HANDLE GetOutputHandle() const;
-
-		HANDLE GetRedirectInputHandle() const;
-		HANDLE GetRedirectOutputHandle() const;
-	};
-
-	class FileStdStream : public StdStream
+	class StdStream
 	{
 	public:
-		static FileStdStream* CreateStdStream(const wchar_t* fileName, bool isInputStream);
-	};
-
-	class MemoryStdStream : public StdStream
-	{
-	public:
-		static MemoryStdStream* CreateStdStream(bool isInputStream);
+		static StdStream* CreateMemoryStream(bool isInputStream);
+		static StdStream* CreateFileStream(bool isInputStream);
 
 	public:
 		virtual size_t Read(unsigned char* buffer, size_t maxSize);
@@ -98,7 +60,7 @@ namespace Sanalar
 		bool m_isInputStream;
 
 	protected:
-		MemoryStdStream();
-		~MemoryStdStream();
+		StdStream();
+		~StdStream();
 	};
 }

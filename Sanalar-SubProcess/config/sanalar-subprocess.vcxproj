@@ -78,11 +78,13 @@
     <Text Include="..\src\ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\public\includes\sanalar_process.h" />
     <ClInclude Include="..\..\public\includes\sanalar_subprocess.h" />
     <ClInclude Include="..\src\stdafx.h" />
     <ClInclude Include="..\src\targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\sanalar_process.cpp" />
     <ClCompile Include="..\src\sanalar_subprocess.cpp" />
     <ClCompile Include="..\src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

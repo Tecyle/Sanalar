@@ -42,7 +42,7 @@ namespace Sanalar
 
 	void SubProcess::SetCommand(const wchar_t* command)
 	{
-		if (m_state != SubProcessState_init)
+		if (m_state != ProcessState_init)
 		{
 			// ERROR: 
 			return;
@@ -78,7 +78,7 @@ namespace Sanalar
 			return false;
 
 		CloseHandle(m_hStdout);
-		m_state = suspend ? SubProcessState_suspend : SubProcessState_running;
+		m_state = suspend ? ProcessState_suspend : ProcessState_running;
 		m_hProcess = pi.hProcess;
 		m_hThread = pi.hThread;
 		
@@ -111,21 +111,21 @@ namespace Sanalar
 
 	bool SubProcess::IsRunning()
 	{
-		SubProcessState state = GetSubProcessState();
-		if (state != SubProcessState_running && state != SubProcessState_suspend)
+		ProcessState state = GetProcessState();
+		if (state != ProcessState_running && state != ProcessState_suspend)
 			return false;
 		return true;
 	}
 
-	SubProcessState SubProcess::GetSubProcessState()
+	ProcessState SubProcess::GetProcessState()
 	{
-		if (m_state != SubProcessState_running && m_state != SubProcessState_suspend)
+		if (m_state != ProcessState_running && m_state != ProcessState_suspend)
 			return m_state;
 
 		// get the information whether process had finished.
 		if (WaitForSingleObject(m_hProcess, 0) == WAIT_OBJECT_0)
 		{
-			m_state = SubProcessState_finished;
+			m_state = ProcessState_finished;
 			if (!GetExitCodeProcess(m_hProcess, &m_returnCode))
 			{
 				// ERROR:
@@ -136,7 +136,7 @@ namespace Sanalar
 
 	bool SubProcess::Suspend()
 	{
-		if (GetSubProcessState() == SubProcessState_running)
+		if (GetProcessState() == ProcessState_running)
 		{
 			NtSuspendProcess(m_hProcess);
 			return true;
@@ -146,7 +146,7 @@ namespace Sanalar
 
 	bool SubProcess::Resume()
 	{
-		if (GetSubProcessState() == SubProcessState_suspend)
+		if (GetProcessState() == ProcessState_suspend)
 		{
 			NtResumeProcess(m_hProcess);
 			return true;
@@ -176,7 +176,7 @@ namespace Sanalar
 		m_hStdin = NULL;
 		m_hStdout = NULL;
 		m_hStderr = NULL;
-		m_state = SubProcessState_init;
+		m_state = ProcessState_init;
 	}
 
 	int SubProcess::GetReturnCode() const
@@ -200,7 +200,7 @@ namespace Sanalar
 		m_hStdout(NULL),
 		m_hStderr(NULL),
 		m_returnCode(0),
-		m_state(SubProcessState_init)
+		m_state(ProcessState_init)
 	{
 	}
 

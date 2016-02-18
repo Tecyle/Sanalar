@@ -30,12 +30,18 @@
     <ClInclude Include="..\..\public\includes\sanalar_subprocess.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\public\includes\sanalar_process.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\sanalar_subprocess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sanalar_process.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
