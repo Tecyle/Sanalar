@@ -1,4 +1,5 @@
 #pragma once
+#include <TlHelp32.h>
 
 namespace Sanalar
 {
@@ -27,7 +28,8 @@ namespace Sanalar
 		ProcessPriority_above,		// 高于正常
 		ProcessPriority_below,		// 低于正常
 		ProcessPriority_high,		// 高
-		ProcessPriority_low			// 低
+		ProcessPriority_low,		// 低
+		ProcessPriority_undefined	// 预期之外的值，一般是发生错误
 	} ProcessPriority;
 
 	//////////////////////////////////////////////////////////////////////////
@@ -64,14 +66,15 @@ namespace Sanalar
 		virtual int GetReturnCode();
 
 		// 获取进程的运行时间，单位毫秒
-		virtual UINT64 GetRunningTime(ProcessRunningTimeType timeType = ProcessRunningTimeType_all);
+		virtual UINT64 GetRunningTime(ProcessRunningTimeType timeType = ProcessRunningTimeType_all) const;
 		// 获得当前进程的总 CPU 占用率，返回 0 ~ 100 之间的一个数
-		virtual UINT8 GetCpuUsage();
+		// interval 指定统计使用率的一次时间间隔
+		virtual UINT8 GetCpuUsage(size_t interval = 100);
 
 		// 获取进程内存的最大使用数，单位字节
-		virtual size_t GetMaxMemoryUsed();
+		virtual size_t GetMaxMemoryUsed() const;
 		// 获得进程的当前内存使用数，单位字节
-		virtual size_t GetMemoryUsed();
+		virtual size_t GetMemoryUsed() const;
 
 		// 获取当前进程的文件名称，不带路径
 		// 如果 fileName 为 NULL，则仅返回文件名的长度，包括末尾的 \0
@@ -81,17 +84,17 @@ namespace Sanalar
 		virtual size_t GetProcessLocation(wchar_t* filePath, size_t filePathBufferSize);
 
 		// 获取进程的 ID，如果进程尚未运行或者已经退出，则返回 0
-		virtual DWORD GetId() const;
+		virtual DWORD GetId();
 
 		// 获取进程的优先级
-		virtual ProcessPriority GetPriority();
+		virtual ProcessPriority GetPriority() const;
 		// 设置进程的优先级
-		virtual bool SetPriority(ProcessPriority priority);
+		virtual bool SetPriority(ProcessPriority priority) const;
 
 		// 获取进程的启动时间
-		virtual SYSTEMTIME GetStartTime() const;
+		virtual bool GetStartTime(LPSYSTEMTIME startTime) const;
 		// 获取进程的结束时间
-		virtual SYSTEMTIME GetFinishedTime() const;
+		virtual bool GetFinishedTime(LPSYSTEMTIME finishedTime) const;
 
 	public:
 		// 通过启动一个命令的方式获取一个进程
@@ -104,6 +107,8 @@ namespace Sanalar
 	protected:
 		Process();
 
+		virtual bool CreateProcessEntry();
+
 	protected:
 		ProcessState m_state;
 
@@ -111,5 +116,7 @@ namespace Sanalar
 		DWORD m_pid;
 
 		DWORD m_returnCode;
+
+		LPPROCESSENTRY32W m_pProcessEntry;
 	};
 }

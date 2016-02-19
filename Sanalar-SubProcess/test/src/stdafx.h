@@ -23,18 +23,18 @@ namespace Microsoft
 	{
 		namespace CppUnitTestFramework
 		{
-			template<> static std::wstring ToString<SubProcessState>(const SubProcessState& t)
+			template<> static std::wstring ToString<ProcessState>(const ProcessState& t)
 			{
 				switch (t)
 				{
-				case SubProcessState_init:
-					return L"SubProcessState_init";
-				case SubProcessState_running:
-					return L"SubProcessState_running";
-				case SubProcessState_suspend:
-					return L"SubProcessState_suspend";
-				case SubProcessState_finished:
-					return L"SubProcessState_finished";
+				case ProcessState_init:
+					return L"ProcessState_init";
+				case ProcessState_running:
+					return L"ProcessState_running";
+				case ProcessState_suspend:
+					return L"ProcessState_suspend";
+				case ProcessState_finished:
+					return L"ProcessState_finished";
 				default:
 					return L"Unknown SubProcessState";
 				}

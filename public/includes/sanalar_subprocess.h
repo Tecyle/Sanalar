@@ -47,9 +47,7 @@ namespace Sanalar
 		virtual HANDLE GetInputHandle() const;
 		virtual HANDLE GetOutputHandle() const;
 
-	private:
-		HANDLE GetRedirectInputHandle() const;
-		HANDLE GetRedirectOutputHandle() const;
+	public:
 		friend void SubProcess::SetStdInput(StdStream* stdInput);
 		friend void SubProcess::SetStdOutput(StdStream* stdOutput);
 		friend void SubProcess::SetStdError(StdStream* stdError);

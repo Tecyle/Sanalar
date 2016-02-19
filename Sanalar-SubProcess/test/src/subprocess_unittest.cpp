@@ -12,12 +12,12 @@ namespace SanalarSubProcessTest
 		TEST_METHOD(RedirectOutputTest)
 		{
 			SubProcess subProcess;
-			MemoryStdStream* stdStream = MemoryStdStream::CreateStdStream(false);
+			StdStream* stdStream = StdStream::CreateMemoryStream(false);
 			subProcess.SetCommand(L"ping 127.0.0.1");
 			subProcess.SetStdOutput(stdStream);
 			Assert::IsTrue(subProcess.Start());
 			Assert::IsTrue(subProcess.Wait());
-			Assert::AreEqual(SubProcessState_finished, subProcess.GetSubProcessState());
+			Assert::AreEqual(ProcessState_finished, subProcess.GetProcessState());
 
 			char output[1024] = { 0 };
 			Assert::IsTrue(stdStream->Read((unsigned char*)output, 1024) > 0);

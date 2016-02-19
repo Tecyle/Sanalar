@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include <stdlib.h>
 #include "sanalar_process.h"
-#include <ntdef.h>
+#include <Psapi.h>
 
-typedef NTSTATUS (WINAPI *FP_NtSuspendProcess)(HANDLE hProcess);
-typedef NTSTATUS (WINAPI *FP_NtResumeProcess)(HANDLE hProcess);
+#pragma comment(lib, "psapi.lib")
+
+typedef LONG (WINAPI *FP_NtSuspendProcess)(HANDLE hProcess);
+typedef LONG (WINAPI *FP_NtResumeProcess)(HANDLE hProcess);
 
 FP_NtSuspendProcess _fnNtSuspendProcess = NULL;
 FP_NtResumeProcess _fnNtResumeProcess = NULL;
@@ -22,14 +24,14 @@ void _ReleaseExternalFunc()
 	FreeLibrary(hNtDll);
 }
 
-static NTSTATUS NtSuspendProcess(HANDLE hProcess)
+static LONG NtSuspendProcess(HANDLE hProcess)
 {
 	if (!_fnNtSuspendProcess)
 		_InitExternalFunc();
 	return _fnNtSuspendProcess(hProcess);
 }
 
-static NTSTATUS NtResumeProcess(HANDLE hProcess)
+static LONG NtResumeProcess(HANDLE hProcess)
 {
 	if (!_fnNtResumeProcess)
 		_InitExternalFunc();
@@ -45,13 +47,15 @@ namespace Sanalar
 		m_state(ProcessState_init),
 		m_hProcess(NULL),
 		m_returnCode(0),
-		m_pid(0)
+		m_pid(0),
+		m_pProcessEntry(NULL)
 	{
 	}
 
 	Process::~Process()
 	{
 		CloseHandle(m_hProcess);
+		delete m_pProcessEntry;
 	}
 
 	Process* Process::Shell(const wchar_t* cmdLine, bool suspend /*= false*/)
@@ -99,7 +103,7 @@ namespace Sanalar
 	{
 		if (m_hProcess)
 		{
-			if (NT_SUCCESS(NtSuspendProcess(m_hProcess)))
+			if (NtSuspendProcess(m_hProcess) >= 0)
 			{
 				m_state = ProcessState_suspend;
 				return true;
@@ -111,7 +115,7 @@ namespace Sanalar
 	bool Process::Resume()
 	{
 		if (m_hProcess)
-		if (NT_SUCCESS(NtResumeProcess(m_hProcess)))
+		if (NtResumeProcess(m_hProcess) >= 0)
 		{
 			m_state = ProcessState_running;
 			return true;
@@ -196,7 +200,7 @@ namespace Sanalar
 		return (int)STILL_ACTIVE;
 	}
 
-	UINT64 Process::GetRunningTime(ProcessRunningTimeType timeType /*= ProcessRunningTimeType_all*/)
+	UINT64 Process::GetRunningTime(ProcessRunningTimeType timeType /*= ProcessRunningTimeType_all*/) const
 	{
 		if (!m_hProcess)
 			return 0u;
@@ -223,6 +227,222 @@ namespace Sanalar
 		default:
 			return 0u;
 		}
+	}
+
+	UINT8 Process::GetCpuUsage(size_t interval /*= 100*/)
+	{
+		static DWORD cpuNum = 0;
+		if (!cpuNum)
+		{
+			SYSTEM_INFO sysInfo;
+			GetSystemInfo(&sysInfo);
+			cpuNum = sysInfo.dwNumberOfProcessors;
+		}
+
+		if (!m_hProcess || GetProcessState() == ProcessState_finished)
+			return 0u;
+
+
+		FILETIME ftLastTime, ftNowTime;
+		UINT64 lastProcessTime, nowProcessTime;
+		UINT64 lastTime, nowTime;
+		lastProcessTime = GetRunningTime();
+		GetSystemTimeAsFileTime(&ftLastTime);
+
+		Sleep(interval);
+
+		nowProcessTime = GetRunningTime();
+		GetSystemTimeAsFileTime(&ftNowTime);
+
+		lastTime = (UINT64)ftLastTime.dwHighDateTime << 32 | (UINT64)ftLastTime.dwLowDateTime;
+		nowTime = (UINT64)ftNowTime.dwHighDateTime << 32 | (UINT64)ftNowTime.dwLowDateTime;
+
+		return (UINT8)((nowProcessTime - lastProcessTime) * 100 / ((nowTime - lastTime) / 10000));
+	}
+
+	size_t Process::GetMaxMemoryUsed() const
+	{
+		if (!m_hProcess)
+			return 0u;
+
+		PROCESS_MEMORY_COUNTERS pmc = { 0 };
+		if (!GetProcessMemoryInfo(m_hProcess, &pmc, sizeof(pmc)))
+			return 0u;
+		return pmc.PeakWorkingSetSize;
+	}
+
+	size_t Process::GetMemoryUsed() const
+	{
+		if (!m_hProcess)
+			return 0u;
+
+		PROCESS_MEMORY_COUNTERS pmc = { 0 };
+		if (!GetProcessMemoryInfo(m_hProcess, &pmc, sizeof(pmc)))
+			return 0u;
+		return pmc.WorkingSetSize;
+	}
+
+	size_t Process::GetProcessName(wchar_t* fileName, size_t fileNameBufferSize)
+	{
+		if (!CreateProcessEntry())
+			return 0;
+
+		size_t nameLen = 0;
+		wchar_t* str = NULL;
+		for (int i = (int)wcslen(m_pProcessEntry->szExeFile) - 1; i >= 0; --i)
+		{
+			str = &m_pProcessEntry->szExeFile[i];
+			nameLen++;
+			if (*str == L'\\' || *str == L'/')
+			{
+				break;
+			}
+		}
+		if (fileName && nameLen && nameLen <= fileNameBufferSize)
+			wcscpy_s(fileName, fileNameBufferSize, str + 1);
+		return nameLen;
+	}
+
+	bool Process::CreateProcessEntry()
+	{
+		if (!m_hProcess)
+			return false;
+
+		if (!m_pProcessEntry)
+		{
+			HANDLE hTHSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+			if (hTHSnapshot == INVALID_HANDLE_VALUE)
+				return false;
+
+			PROCESSENTRY32W pe32 = { 0 };
+			pe32.dwSize = sizeof(pe32);
+			if (!Process32FirstW(hTHSnapshot, &pe32))
+			{
+				CloseHandle(hTHSnapshot);
+				return false;
+			}
+			do
+			{
+				if (pe32.th32ProcessID == GetId())
+				{
+					m_pProcessEntry = new PROCESSENTRY32W;
+					memcpy_s(m_pProcessEntry, sizeof(PROCESSENTRY32W), &pe32, sizeof(pe32));
+					break;
+				}
+			} while (Process32NextW(hTHSnapshot, &pe32));
+			CloseHandle(hTHSnapshot);
+			if (!m_pProcessEntry)
+				return false;
+		}
+		return true;
+	}
+
+	size_t Process::GetProcessLocation(wchar_t* filePath, size_t filePathBufferSize)
+	{
+		if (!CreateProcessEntry())
+			return 0;
+
+		size_t nameLen = 0;
+		wchar_t* str = NULL;
+		int i;
+		for (i = (int)wcslen(m_pProcessEntry->szExeFile) - 1; i >= 0; --i)
+		{
+			str = &m_pProcessEntry->szExeFile[i];
+			if (*str == L'\\' || *str == L'/')
+			{
+				break;
+			}
+		}
+		nameLen = i + 2;
+		if (filePath && nameLen && nameLen <= filePathBufferSize)
+		{
+			wcsncpy_s(filePath, filePathBufferSize, m_pProcessEntry->szExeFile, nameLen - 1);
+			filePath[nameLen - 1] = 0;
+		}
+		return nameLen;
+	}
+
+	DWORD Process::GetId()
+	{
+		if (!m_hProcess)
+			return 0;
+
+		if (!m_pid)
+			m_pid = GetProcessId(m_hProcess);
+		
+		return m_pid;
+	}
+
+	ProcessPriority Process::GetPriority() const
+	{
+		if (!m_hProcess)
+			return ProcessPriority_undefined;
+		switch (GetPriorityClass(m_hProcess))
+		{
+		case ABOVE_NORMAL_PRIORITY_CLASS:
+			return ProcessPriority_above;
+		case BELOW_NORMAL_PRIORITY_CLASS:
+			return ProcessPriority_below;
+		case NORMAL_PRIORITY_CLASS:
+			return ProcessPriority_normal;
+		case REALTIME_PRIORITY_CLASS:
+			return ProcessPriority_realTime;
+		case HIGH_PRIORITY_CLASS:
+			return ProcessPriority_high;
+		case IDLE_PRIORITY_CLASS:
+			return ProcessPriority_low;
+		default:
+			return ProcessPriority_undefined;
+		}
+	}
+
+	bool Process::SetPriority(ProcessPriority priority) const
+	{
+		if (!m_hProcess)
+			return false;
+
+		switch (priority)
+		{
+		case ProcessPriority_normal:
+			return SetPriorityClass(m_hProcess, NORMAL_PRIORITY_CLASS) != FALSE;
+		case ProcessPriority_realTime:
+			return SetPriorityClass(m_hProcess, REALTIME_PRIORITY_CLASS) != FALSE;
+		case ProcessPriority_above:
+			return SetPriorityClass(m_hProcess, ABOVE_NORMAL_PRIORITY_CLASS) != FALSE;
+		case ProcessPriority_below:
+			return SetPriorityClass(m_hProcess, BELOW_NORMAL_PRIORITY_CLASS) != FALSE;
+		case ProcessPriority_high:
+			return SetPriorityClass(m_hProcess, HIGH_PRIORITY_CLASS) != FALSE;
+		case ProcessPriority_low:
+			return SetPriorityClass(m_hProcess, IDLE_PRIORITY_CLASS) != FALSE;
+		case ProcessPriority_undefined:
+		default:
+			return false;
+		}
+	}
+
+	bool Process::GetStartTime(LPSYSTEMTIME startTime) const
+	{
+		if (!m_hProcess)
+			return false;
+
+		FILETIME createTime, endTime, kernelTime, userTime;
+		if (!GetProcessTimes(m_hProcess, &createTime, &endTime, &kernelTime, &userTime))
+			return false;
+
+		return FileTimeToSystemTime(&createTime, startTime) != FALSE;
+	}
+
+	bool Process::GetFinishedTime(LPSYSTEMTIME finishedTime) const
+	{
+		if (!m_hProcess)
+			return false;
+
+		FILETIME createTime, endTime, kernelTime, userTime;
+		if (!GetProcessTimes(m_hProcess, &createTime, &endTime, &kernelTime, &userTime))
+			return false;
+
+		return FileTimeToSystemTime(&endTime, finishedTime) != FALSE;
 	}
 
 }
