@@ -60,7 +60,7 @@ namespace Sanalar
 		// 获取当前进程的状态
 		virtual ProcessState GetProcessState();
 
-		// 获取进程的返回值，如果进程没有退出，则返回 STILL_ACTIVE
+		// 获取进程的返回值，如果进程没有退出或者没有创建，则返回 STILL_ACTIVE
 		virtual int GetReturnCode();
 
 		// 获取进程的运行时间，单位毫秒
@@ -98,12 +98,17 @@ namespace Sanalar
 		static Process* Shell(const wchar_t* cmdLine, bool suspend = false);
 		// 打开一个已经在运行的进程
 		static Process* Open(DWORD pid);
+
+		~Process();
 		
+	protected:
+		Process();
+
 	protected:
 		ProcessState m_state;
 
 		HANDLE m_hProcess;
-		HANDLE m_hThread;
+		DWORD m_pid;
 
 		DWORD m_returnCode;
 	};

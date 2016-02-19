@@ -3,39 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-typedef DWORD (WINAPI *FP_NtSuspendProcess)(HANDLE hProcess);
-typedef DWORD (WINAPI *FP_NtResumeProcess)(HANDLE hProcess);
-
-FP_NtSuspendProcess _fnNtSuspendProcess = NULL;
-FP_NtResumeProcess _fnNtResumeProcess = NULL;
-HMODULE hNtDll = NULL;
-
-static void _InitExternalFunc()
-{
-	hNtDll = LoadLibrary(L"ntdll.dll");
-	_fnNtSuspendProcess = (FP_NtSuspendProcess)GetProcAddress(hNtDll, "NtSuspendProcess");
-	_fnNtResumeProcess = (FP_NtResumeProcess)GetProcAddress(hNtDll, "NtResumeProcess");
-}
-
-void _ReleaseExternalFunc()
-{
-	FreeLibrary(hNtDll);
-}
-
-static DWORD NtSuspendProcess(HANDLE hProcess)
-{
-	if (!_fnNtSuspendProcess)
-		_InitExternalFunc();
-	return _fnNtSuspendProcess(hProcess);
-}
-
-static DWORD NtResumeProcess(HANDLE hProcess)
-{
-	if (!_fnNtResumeProcess)
-		_InitExternalFunc();
-	return _fnNtResumeProcess(hProcess);
-}
-
 namespace Sanalar
 {
 
