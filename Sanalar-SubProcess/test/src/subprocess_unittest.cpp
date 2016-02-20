@@ -24,5 +24,21 @@ namespace SanalarSubProcessTest
 			Logger::WriteMessage(output);
 		}
 
+		TEST_METHOD(ProcessBasic)
+		{
+			Process* process = Process::Shell(L"ping 127.0.0.1 -t");
+			Assert::IsTrue(process->GetId() > 0);
+			Assert::IsTrue(process->GetPriority() == ProcessPriority_normal);
+			Assert::IsTrue(process->IsActive());
+			Assert::IsTrue(process->Suspend());
+			Sleep(200);
+			Assert::IsTrue(process->Resume());
+			Sleep(200);
+			Assert::IsTrue(process->Terminate());
+			Sleep(200);
+			Assert::IsTrue(process->IsFinished());
+			delete process;
+		}
+
 	};
 }
