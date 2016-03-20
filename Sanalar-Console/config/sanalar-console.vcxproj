@@ -78,6 +78,7 @@
     <Text Include="..\src\ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\public\includes\console_base.h" />
     <ClInclude Include="..\src\stdafx.h" />
     <ClInclude Include="..\src\targetver.h" />
   </ItemGroup>
