@@ -2,15 +2,21 @@
 
 namespace Sanalar
 {
-	typedef ConsoleFontColor
+	typedef enum ConsoleFontColor
 	{
 
 	} ConsoleFontColor;
 
-	typedef ConsoleBackgroundColor
+	typedef enum ConsoleBackgroundColor
 	{
 
 	} ConsoleBackgroundColor;
+
+	typedef struct CursorPoint
+	{
+		int x;
+		int y;
+	} CursorPoint;
 
 	class Console
 	{
@@ -30,5 +36,8 @@ namespace Sanalar
 		void hideCursor();
 		void showCursor();
 		bool isCursorVisiable() const;
+
+		CursorPoint getCursorPosition() const;
+		CursorPoint setCursorPosition(const CursorPoint* newPosition);
 	};
 }
