@@ -22,22 +22,27 @@ namespace Sanalar
 	{
 	public:
 		// 基本输出功能
-		int printf(const char* format, ...);
-		int printf(const wchar_t* format, ...);
+		int Printf(const char* format, ...);
+		int Printf(const wchar_t* format, ...);
 		
-		void setStdHandle();
+		void SetStdHandle();
 
-		int printWithColor(ConsoleFontColor fontColor, ConsoleBackgroundColor backgroundColor, const char* format, ...);
-		int printWithColor(ConsoleFontColor fontColor, ConsoleBackgroundColor backgroundColor, const wchar_t* format, ...);
+		int PrintWithColor(ConsoleFontColor fontColor, ConsoleBackgroundColor backgroundColor, const char* format, ...);
+		int PrintWithColor(ConsoleFontColor fontColor, ConsoleBackgroundColor backgroundColor, const wchar_t* format, ...);
+
+		void ClearScreen();
 
 		// 基本输入功能
 
 		// 控制台属性（对于非标准屏幕输出无效）
-		void hideCursor();
-		void showCursor();
-		bool isCursorVisiable() const;
+		void HideCursor();
+		void ShowCursor();
+		bool IsCursorVisiable() const;
 
-		CursorPoint getCursorPosition() const;
-		CursorPoint setCursorPosition(const CursorPoint* newPosition);
+		const wchar_t* GetTitle() const;
+		void SetTitle(const wchar_t* title) const;
+
+		CursorPoint GetCursorPosition() const;
+		CursorPoint SetCursorPosition(const CursorPoint* newPosition);
 	};
 }
